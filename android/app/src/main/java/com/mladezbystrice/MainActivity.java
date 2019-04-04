@@ -1,4 +1,4 @@
-package com.mladez-bystrice;
+package com.mladez.bystrice;
 
 import com.facebook.react.ReactActivity;
 

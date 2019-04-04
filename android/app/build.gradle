@@ -102,7 +102,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.mladez-bystrice"
+        applicationId "com.mladez.bystrice"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
