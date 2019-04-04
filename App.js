@@ -1,51 +1,37 @@
-import React, {Component} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import React from 'react';
 import {createBottomTabNavigator, createAppContainer} from 'react-navigation';
-import {Events, Discussion, Library, Recordings, Account, Settings} from './containers';
-// import Account from './containers/Account';
-// import Recordings from './containers/Recordings';
-// import Discussion from './containers/Discussion';
-// import Library from './containers/Library';
-// import Events from './containers/Events';
-// import Settings from './containers/Settings';
+import {Icon} from 'react-native-elements';
+import {Events, Discussion, Library, Recordings, Account, Settings} from './containers/index';
 
-const NavigationTab = createBottomTabNavigator({
-    Akce: Events,
-    Diskuze: Discussion,
-    Knihovna: Library,
-    'Nahrávky': Recordings,
-    'Účet': Account,
-    'Nastavení': Settings,
-})
-
-class App extends Component {
-    render() {
-        return (
-            <View style={styles.container}>
-                <Text style={styles.welcome}>Welcome to React Native!</Text>
-                <Text style={styles.instructions}>To get started, edit App.js</Text>
-            </View>
-        );
-    }
-}
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#F5FCFF',
+const NavigationTab = createBottomTabNavigator(
+    {
+        Akce: Events,
+        Diskuze: Discussion,
+        Knihovna: Library,
+        'Účet': Account,
+        'Nahrávky': Recordings,
+        'Nastavení': Settings,
     },
-    welcome: {
-        fontSize: 20,
-        textAlign: 'center',
-        margin: 10,
-    },
-    instructions: {
-        textAlign: 'center',
-        color: '#333333',
-        marginBottom: 5,
-    },
-});
+    {
+        defaultNavigationOptions: ({navigation}) => ({
+            tabBarIcon: ({focused, horizontal, tintColor}) => {
+                const {routeName} = navigation.state;
+                let iconName;
+                switch(routeName){
+                    case 'Akce': iconName='md-calendar';break;
+                    case 'Diskuze': iconName='ios-chatboxes';break;
+                    case 'Knihovna': iconName='md-book';break;
+                    case 'Nahrávky': iconName='ios-recording';break;
+                    case 'Účet': iconName='md-person';break;
+                    case 'Nastavení': iconName='ios-settings';break;
+                }
+                return (<Icon name={iconName} type='ionicon'/>)
+            },
+        }),
+        tabBarOptions: {
+            activeTintColor: 'blue',
+            inactiveTintColor: 'gray',
+        },
+    })
 
-export default createTabNavigator(NavigationTab);
+export default createAppContainer(NavigationTab);
