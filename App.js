@@ -34,4 +34,5 @@ const NavigationTab = createBottomTabNavigator(
         },
     })
 
-export default createAppContainer(NavigationTab);
+//TODO add notifications
+export default (createAppContainer(NavigationTab));

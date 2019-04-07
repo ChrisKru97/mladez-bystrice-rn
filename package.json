@@ -8,6 +8,7 @@
     "android": "node node_modules/react-native/local-cli/cli.js run-android"
   },
   "dependencies": {
+    "js-sha256": "^0.9.0",
     "react": "16.8.3",
     "react-native": "0.59.3",
     "react-native-elements": "^1.1.0",
