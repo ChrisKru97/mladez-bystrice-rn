@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
-import {View} from 'react-native';
-import {Button, Text, Input, Icon} from 'react-native-elements';
+import {View, AsyncStorage} from 'react-native';
+import {Button, Input, Icon} from 'react-native-elements';
 import {setToken, setUsername, login, logout} from '../actions';
 import {connect} from 'react-redux';
 import {sha256} from 'js-sha256';
@@ -28,6 +28,8 @@ class Account extends Component {
             this.props.login();
             // this.props.setUsername(this.state.userngame);
             this.props.setToken(token);
+            AsyncStorage.setItem('token',token);
+
         }
         //     } else {
         //         this.setState({

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {Component} from 'react';
 import {createBottomTabNavigator, createAppContainer} from 'react-navigation';
 import {Icon} from 'react-native-elements';
 import {Events, Discussion, Library, Recordings, Account, Settings} from './containers/index';
@@ -17,13 +17,25 @@ const NavigationTab = createBottomTabNavigator(
             tabBarIcon: ({focused, horizontal, tintColor}) => {
                 const {routeName} = navigation.state;
                 let iconName;
-                switch(routeName){
-                    case 'Akce': iconName='md-calendar';break;
-                    case 'Diskuze': iconName='ios-chatboxes';break;
-                    case 'Knihovna': iconName='md-book';break;
-                    case 'Nahrávky': iconName='ios-recording';break;
-                    case 'Účet': iconName='md-person';break;
-                    case 'Nastavení': iconName='ios-settings';break;
+                switch (routeName) {
+                    case 'Akce':
+                        iconName = 'md-calendar';
+                        break;
+                    case 'Diskuze':
+                        iconName = 'ios-chatboxes';
+                        break;
+                    case 'Knihovna':
+                        iconName = 'md-book';
+                        break;
+                    case 'Nahrávky':
+                        iconName = 'ios-recording';
+                        break;
+                    case 'Účet':
+                        iconName = 'md-person';
+                        break;
+                    case 'Nastavení':
+                        iconName = 'ios-settings';
+                        break;
                 }
                 return (<Icon name={iconName} type='ionicon'/>)
             },
@@ -33,6 +45,8 @@ const NavigationTab = createBottomTabNavigator(
             inactiveTintColor: 'gray',
         },
     })
+
+console.disableYellowBox=true;
 
 //TODO add notifications
 export default (createAppContainer(NavigationTab));

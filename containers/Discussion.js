@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
-import {AsyncStorage, FlatList, StyleSheet, Text, View} from 'react-native';
+import {AsyncStorage, FlatList, View} from 'react-native';
 import {styles} from '../config';
-import {Button, ButtonGroup, Card, Header} from "react-native-elements";
+import {Button, Text, Card, Header} from "react-native-elements";
 
 class Discussion extends Component {
     state = {

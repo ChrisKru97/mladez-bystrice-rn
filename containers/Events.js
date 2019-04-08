@@ -1,9 +1,10 @@
 import React, {Component} from 'react';
-import {FlatList, View} from 'react-native';
-import {Card, Text, Header, Button, ButtonGroup} from 'react-native-elements';
-import {AsyncStorage} from 'react-native';
+import {FlatList, View, Modal} from 'react-native';
+import {Card, Text, Input, Header, Button, ButtonGroup} from 'react-native-elements';
+import {AsyncStorage, DatePickerAndroid} from 'react-native';
 import {connect} from 'react-redux';
 import {styles} from '../config';
+import {login, setToken} from "../actions";
 
 class Events extends Component {
     state = {
@@ -12,9 +13,19 @@ class Events extends Component {
         passed: null,
         selectedButton: 0,
         modal: false,
+        title: '',
+        description: '',
+        author: '',
+        date: null,
     }
 
     componentDidMount = () => {
+        AsyncStorage.getItem('token').then(cache => {
+            if (cache) {
+                this.props.login();
+                this.props.setToken(cache);
+            }
+        })
         AsyncStorage.getItem('allEvents').then(cache => {
             if (cache && !this.state.all) {
                 this.setState({
@@ -55,9 +66,61 @@ class Events extends Component {
         })
     }
 
+    addEvent = () => {
+
+    }
+
     render() {
         return (
             <View style={styles.container}>
+                <Modal visible={this.state.modal} transparent={true} animationType='slide'>
+                    <View style={styles.modal}>
+                        <View style={{width: '75%', height: '75%', justifyContent: 'space-evenly', backgroundColor: '#fff', padding: 20}}>
+                            <Input style={{margin: 5}} placeholder='O co jde?' value={this.state.title}
+                                   autoCorrect={false}
+                                   onChangeText={event => {
+                                       this.setState({title: event});
+                                   }}/>
+                            <Input style={{margin: 5}} multiline placeholder='Popis' value={this.state.description}
+                                   autoCorrect={false}
+                                   onChangeText={event => {
+                                       this.setState({description: event});
+                                   }}/>
+                            <Input style={{margin: 5}} placeholder='Autor' value={this.state.author} autoCorrect={false}
+                                   onChangeText={event => {
+                                       this.setState({author: event});
+                                   }}/>
+                                   <Button title={'Vyber datum' + (this.state.date?' (Vybráno)':'')} raised onPress={async ()=>{
+                                       try {
+                                           const {action, year, month, day} = await DatePickerAndroid.open({
+                                               minDate: Date.now(),
+                                               date: Date.now(),
+                                               mode: 'calendar,'
+                                           });
+                                           if (action !== DatePickerAndroid.dismissedAction) {
+                                               this.setState({
+                                                   date: new Date(year,month,day),
+                                               });
+                                           }
+                                       } catch ({code, message}) {
+                                           console.error('Nelze zvolit', message);
+                                       }
+                                   }}/>
+                            <View style={{flexDirection: 'row', justifyContent:'space-evenly', alignContent: 'center'}}>
+                                <Button title='Zruš' raised onPress={() => {
+                                    this.setState({
+                                        modal: false,
+                                        title: '',
+                                        description: '',
+                                        author: '',
+                                        date: null,
+                                    })
+                                }}/>
+                                <Button title='Přidej' raised onPress={this.addEvent}/>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
                 <Header
                     leftComponent={null}
                     centerComponent={(
@@ -84,7 +147,8 @@ class Events extends Component {
                         const date = new Date(item.date);
                         return (
                             <Card title={item.title}>
-                                <Text style={{fontWeight: 'bold'}}>{`${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`}</Text>
+                                <Text
+                                    style={{fontWeight: 'bold'}}>{`${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`}</Text>
                                 <Text>{item.description}</Text>
                                 <Text style={{fontWeight: 'bold'}}>{item.author}</Text>
                             </Card>
@@ -96,4 +160,10 @@ class Events extends Component {
     }
 }
 
-export default connect(state => state.login)(Events);
+export default connect(state => state.login,
+    (dispatch) => {
+        return {
+            setToken: event => dispatch(setToken(event)),
+            login: event => dispatch(login()),
+        }
+    })(Events);

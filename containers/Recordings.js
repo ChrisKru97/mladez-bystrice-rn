@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {Text, View} from 'react-native';
+import {connect} from 'react-redux';
 import {styles} from '../config';
 
 class Recordings extends Component {
@@ -7,11 +8,11 @@ class Recordings extends Component {
         return (
             <View style={styles.container}>
                 <Text>
-                    Nahravky
+                    {this.props.logged?'Nahravky':'Prihlas se'}
                 </Text>
             </View>
         );
     }
 }
 
-export default Recordings;
+export default connect(state=>state.login)(Recordings);
