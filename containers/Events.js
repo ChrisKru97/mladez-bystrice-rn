@@ -1,7 +1,8 @@
 import React, {Component} from 'react';
-import {FlatList, View, Modal} from 'react-native';
+import {FlatList, View} from 'react-native';
 import {Card, Text, Input, Header, Button, ButtonGroup} from 'react-native-elements';
 import {AsyncStorage, DatePickerAndroid} from 'react-native';
+import Modal from 'react-native-modal';
 import {connect} from 'react-redux';
 import {styles} from '../config';
 import {login, setToken} from "../actions";
@@ -15,7 +16,6 @@ class Events extends Component {
         modal: false,
         title: '',
         description: '',
-        author: '',
         date: null,
     }
 
@@ -70,55 +70,55 @@ class Events extends Component {
 
     }
 
+    closeModal = () => {
+        this.setState({
+            modal: false,
+            title: '',
+            description: '',
+            date: null,
+        })
+    }
+
     render() {
         return (
             <View style={styles.container}>
-                <Modal visible={this.state.modal} transparent={true} animationType='slide'>
-                    <View style={styles.modal}>
-                        <View style={{width: '75%', height: '75%', justifyContent: 'space-evenly', backgroundColor: '#fff', padding: 20}}>
-                            <Input style={{margin: 5}} placeholder='O co jde?' value={this.state.title}
-                                   autoCorrect={false}
-                                   onChangeText={event => {
-                                       this.setState({title: event});
-                                   }}/>
-                            <Input style={{margin: 5}} multiline placeholder='Popis' value={this.state.description}
-                                   autoCorrect={false}
-                                   onChangeText={event => {
-                                       this.setState({description: event});
-                                   }}/>
-                            <Input style={{margin: 5}} placeholder='Autor' value={this.state.author} autoCorrect={false}
-                                   onChangeText={event => {
-                                       this.setState({author: event});
-                                   }}/>
-                                   <Button title={'Vyber datum' + (this.state.date?' (Vybráno)':'')} raised onPress={async ()=>{
-                                       try {
-                                           const {action, year, month, day} = await DatePickerAndroid.open({
-                                               minDate: Date.now(),
-                                               date: Date.now(),
-                                               mode: 'calendar,'
-                                           });
-                                           if (action !== DatePickerAndroid.dismissedAction) {
-                                               this.setState({
-                                                   date: new Date(year,month,day),
-                                               });
-                                           }
-                                       } catch ({code, message}) {
-                                           console.error('Nelze zvolit', message);
-                                       }
-                                   }}/>
-                            <View style={{flexDirection: 'row', justifyContent:'space-evenly', alignContent: 'center'}}>
-                                <Button title='Zruš' raised onPress={() => {
-                                    this.setState({
-                                        modal: false,
-                                        title: '',
-                                        description: '',
-                                        author: '',
-                                        date: null,
-                                    })
+                <Modal isVisible={this.state.modal} swipeDirection='down' awoidKeyboard={true}
+                       onBackButtonPress={this.closeModal}
+                       onSwipeComplete={this.closeModal}>
+                    <View style={{
+                        justifyContent: 'space-evenly',
+                        backgroundColor: '#fff',
+                        padding: 20,
+                        height: '75%'
+                    }}>
+                        <Input style={{margin: 5}} placeholder='O co jde?' value={this.state.title}
+                               autoCorrect={false}
+                               onChangeText={event => {
+                                   this.setState({title: event});
+                               }}/>
+                        <Input style={{margin: 5}} multiline placeholder='Popis' value={this.state.description}
+                               autoCorrect={false}
+                               onChangeText={event => {
+                                   this.setState({description: event});
+                               }}/>
+                        <Button title={'Vyber datum' + (this.state.date ? ' (Vybráno)' : '')} raised
+                                onPress={async () => {
+                                    try {
+                                        const {action, year, month, day} = await DatePickerAndroid.open({
+                                            minDate: Date.now(),
+                                            date: Date.now(),
+                                            mode: 'calendar,'
+                                        });
+                                        if (action !== DatePickerAndroid.dismissedAction) {
+                                            this.setState({
+                                                date: new Date(year, month, day),
+                                            });
+                                        }
+                                    } catch ({code, message}) {
+                                        console.error('Nelze zvolit', message);
+                                    }
                                 }}/>
-                                <Button title='Přidej' raised onPress={this.addEvent}/>
-                            </View>
-                        </View>
+                        <Button title='Přidej' raised onPress={this.addEvent}/>
                     </View>
                 </Modal>
                 <Header

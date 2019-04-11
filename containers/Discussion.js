@@ -1,12 +1,16 @@
 import React, {Component} from 'react';
 import {AsyncStorage, FlatList, View} from 'react-native';
 import {styles} from '../config';
-import {Button, Text, Card, Header} from "react-native-elements";
+import {Button, Text, Card, Header, Input} from "react-native-elements";
+import Modal from "react-native-modal";
+import {connect} from 'react-redux';
 
 class Discussion extends Component {
     state = {
         data: null,
         modal: false,
+        message: '',
+        author: this.props.username,
     }
 
     componentDidMount = () => {
@@ -18,7 +22,7 @@ class Discussion extends Component {
             }
         })
         fetch('https://arcane-temple-75559.herokuapp.com/getmessages').then(response => response.json()).then(response => {
-        let sorted=response.sort((a,b)=> Date.parse(b.date) - Date.parse(a.date))
+            let sorted = response.sort((a, b) => Date.parse(b.date) - Date.parse(a.date))
             this.setState({
                 data: sorted,
             }, () => {
@@ -27,9 +31,45 @@ class Discussion extends Component {
         })
     }
 
+    addMessage = () => {
+
+    }
+
+    closeModal = () => {
+        this.setState({
+            modal: false,
+            message: '',
+            author: this.props.username,
+        })
+    }
+
     render() {
         return (
             <View style={styles.container}>
+                <Modal isVisible={this.state.modal} swipeDirection='down' awoidKeyboard={true}
+                       onBackButtonPress={this.closeModal}
+                       onSwipeComplete={this.closeModal}>
+                    <View style={{
+                        justifyContent: 'space-evenly',
+                        backgroundColor: '#fff',
+                        padding: 20,
+                        height: '75%'
+                    }}>
+                        <Input style={{margin: 5}} multiline placeholder='Zpráva' value={this.state.message}
+                               autoCorrect={false}
+                               onChangeText={event => {
+                                   this.setState({message: event});
+                               }}/>
+                        {this.props.logged ? null :
+                            (<Input style={{margin: 5}} multiline placeholder='Autor' value={this.state.author}
+                                    autoCorrect={false}
+                                    onChangeText={event => {
+                                        this.setState({author: event});
+                                    }}/>)
+                        }
+                        <Button title='Přidej' raised onPress={this.addMessage}/>
+                    </View>
+                </Modal>
                 <Header
                     leftComponent={null}
                     centerComponent={null}
@@ -57,4 +97,4 @@ class Discussion extends Component {
     }
 }
 
-export default Discussion;
+export default connect(state => state.login)(Discussion);

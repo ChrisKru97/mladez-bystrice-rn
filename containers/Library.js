@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
-import {View, FlatList, AsyncStorage} from 'react-native';
-import {Button, Card, CheckBox, Header, Text} from 'react-native-elements';
+import {View, FlatList, AsyncStorage, DatePickerAndroid, Modal} from 'react-native';
+import {Button, Card, CheckBox, Header, Input, Text} from 'react-native-elements';
 import {connect} from 'react-redux';
 import {styles} from '../config';
 
@@ -9,6 +9,8 @@ class Library extends Component {
         data: null,
         modal: false,
         error: '',
+        title: '',
+        description: '',
     }
 
     componentDidMount = () => {
@@ -59,9 +61,64 @@ class Library extends Component {
         })
     }
 
+    addBook = () => {
+        fetch('https://arcane-temple-75559.herokuapp.com/alterbook',
+            {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json, text/plain, */*',
+                    'Content-Type': 'application/json;charset=UTF-8',
+                },
+                body: JSON.stringify({
+                    title: this.state.title,
+                    description: this.state.description,
+                    hash: this.props.token,
+                })
+            }).then(res => {
+            this.setState({
+                error: JSON.stringify(res),
+                title: '',
+                description: '',
+            })
+        })
+    }
+
     render() {
         return (
             <View style={styles.container}>
+                <Modal visible={this.state.modal} transparent={true} animationType='slide'>
+                    <View style={styles.modal}>
+                        <View style={{
+                            width: '75%',
+                            height: '75%',
+                            justifyContent: 'space-evenly',
+                            backgroundColor: '#fff',
+                            padding: 20
+                        }}>
+                            <Input style={{margin: 5}} placeholder='Název knihy?' value={this.state.title}
+                                   autoCorrect={false}
+                                   onChangeText={event => {
+                                       this.setState({title: event});
+                                   }}/>
+                            <Input style={{margin: 5}} multiline placeholder='Popis' value={this.state.description}
+                                   autoCorrect={false}
+                                   onChangeText={event => {
+                                       this.setState({description: event});
+                                   }}/>
+                            <View
+                                style={{flexDirection: 'row', justifyContent: 'space-evenly', alignContent: 'center'}}>
+                                <Button title='Zruš' raised onPress={() => {
+                                    this.setState({
+                                        modal: false,
+                                        title: '',
+                                        description: '',
+                                    })
+                                }}/>
+                                <Button title='Přidej' raised onPress={this.addBook}/>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
                 <Header
                     leftComponent={null}
                     centerComponent={null}
