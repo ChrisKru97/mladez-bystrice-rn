@@ -17,6 +17,7 @@ class Events extends Component {
         title: '',
         description: '',
         date: null,
+        message: null,
     }
 
     componentDidMount = () => {
@@ -24,6 +25,11 @@ class Events extends Component {
             if (cache) {
                 this.props.login();
                 this.props.setToken(cache);
+            }
+        })
+        AsyncStorage.getItem('username').then(cache => {
+            if (cache) {
+                this.props.setUsername(cache);
             }
         })
         AsyncStorage.getItem('allEvents').then(cache => {
@@ -63,11 +69,53 @@ class Events extends Component {
                 AsyncStorage.setItem('upcomingEvents', JSON.stringify(upcoming));
                 AsyncStorage.setItem('passedEvents', JSON.stringify(passed));
             })
+        }).catch(err => {
+            console.error(err);
+            this.setState({
+                message: {
+                    good: false,
+                    text: 'Něco se nepovedlo'
+                }
+            })
         })
     }
 
     addEvent = () => {
-
+        fetch('https://arcane-temple-75559.herokuapp.com/adddata',
+            {
+                method: 'POST',
+                headers: new Headers({'Authorization': 'Basic ' + this.props.token}),
+                body: {
+                    topic: this.state.topic,
+                    description: this.state.description,
+                    date: this.state.date,
+                }
+            }).then(response => response.json()).then(response => {
+            if (response.ok) {
+                this.setState({
+                    message: {
+                        good: true,
+                        text: 'Změny uloženy',
+                    }
+                })
+            } else {
+                console.error(response);
+                this.setState({
+                    message: {
+                        good: false,
+                        text: 'Něco se nepovedlo'
+                    }
+                })
+            }
+        }).catch(err => {
+            console.error(err);
+            this.setState({
+                message: {
+                    good: false,
+                    text: 'Něco se nepovedlo'
+                }
+            })
+        })
     }
 
     closeModal = () => {
@@ -76,13 +124,23 @@ class Events extends Component {
             title: '',
             description: '',
             date: null,
+            message: null,
         })
     }
 
+    deleteEvent = () => {
+        //TODO delete event
+    }
+
+
     render() {
+        const {message, modal, title, description, date, selectedButton, upcoming, passed, all} = this.state;
+        const messageView = message ? (
+            <Text style={{color: message.bad ? 'red' : 'green'}}>{message.text}</Text>
+        ) : null;
         return (
             <View style={styles.container}>
-                <Modal isVisible={this.state.modal} swipeDirection='down' awoidKeyboard={true}
+                <Modal isVisible={modal} swipeDirection='down' awoidKeyboard={true}
                        onBackButtonPress={this.closeModal}
                        onSwipeComplete={this.closeModal}>
                     <View style={{
@@ -91,17 +149,18 @@ class Events extends Component {
                         padding: 20,
                         height: '75%'
                     }}>
-                        <Input style={{margin: 5}} placeholder='O co jde?' value={this.state.title}
+                        {messageView}
+                        <Input style={{margin: 5}} placeholder='O co jde?' value={title}
                                autoCorrect={false}
                                onChangeText={event => {
                                    this.setState({title: event});
                                }}/>
-                        <Input style={{margin: 5}} multiline placeholder='Popis' value={this.state.description}
+                        <Input style={{margin: 5}} multiline placeholder='Popis' value={description}
                                autoCorrect={false}
                                onChangeText={event => {
                                    this.setState({description: event});
                                }}/>
-                        <Button title={'Vyber datum' + (this.state.date ? ' (Vybráno)' : '')} raised
+                        <Button title={'Vyber datum' + (date ? ' (Vybráno)' : '')} raised
                                 onPress={async () => {
                                     try {
                                         const {action, year, month, day} = await DatePickerAndroid.open({
@@ -130,7 +189,7 @@ class Events extends Component {
                                     selectedButton: index,
                                 })
                             }}
-                            selectedIndex={this.state.selectedButton}
+                            selectedIndex={selectedButton}
                             buttons={['Nové', 'Všechny', 'Minulé']}
                         />
                     )}
@@ -140,8 +199,9 @@ class Events extends Component {
                         })
                     }}/>) : null}
                 />
+                {messageView}
                 <FlatList
-                    data={this.state.selectedButton === 0 ? this.state.upcoming : this.state.selectedButton === 2 ? this.state.passed : this.state.all}
+                    data={selectedButton === 0 ? upcoming : selectedButton === 2 ? passed : all}
                     keyExtractor={item => item.id.toString()}
                     renderItem={({item}) => {
                         const date = new Date(item.date);

@@ -1,43 +1,48 @@
 import React, {Component} from 'react';
 import {View, AsyncStorage} from 'react-native';
-import {Button, Input, Icon} from 'react-native-elements';
+import {Button, Input, Icon, Text} from 'react-native-elements';
 import {setToken, setUsername, login, logout} from '../actions';
 import {connect} from 'react-redux';
-import {sha256} from 'js-sha256';
 import {styles} from '../config';
-
-const token = 'BFB70F91B2D7124A7C78A1632C863F2CEC9C24D038DDD118D0D77B2BB4A4BEFA'
 
 class Account extends Component {
     state = {
-        // username: '',
+        username: '',
         password: '',
+        message: null,
     }
 
     login = () => {
-        // fetch('url',
-        //     {
-        //         method: 'POST',
-        //         body: JSON.stringify({
-        //             username: this.state.username,
-        //             password: this.state.password,
-        //         })
-        //     }).then(response => response.json()).then(response => {
-        //     if (response.logged) {
-        if(sha256(this.state.password).toUpperCase()===token) {
-            this.props.login();
-            // this.props.setUsername(this.state.userngame);
-            this.props.setToken(token);
-            AsyncStorage.setItem('token',token);
+        fetch('https://arcane-temple-75559.herokuapp.com/login',
+            {
+                method: 'GET',
+                headers: new Headers({'Authorization': 'Basic ' + base64.encode(this.state.username + ":" + this.state.password)}),
+            }).then(response => response.json()).then(response => {
+            if (response.hasOwnProperty(jwt)) {
+                this.props.login();
+                this.props.setUsername(response.user.username);
+                this.props.setToken(response.jwt);
+                AsyncStorage.setItem('token', response.jwt);
+                AsyncStorage.setItem('username', response.user.username);
+            } else {
+                console.error(err);
+                this.setState({
+                    message: {
+                        good: false,
+                        text: 'Špatné údaje',
+                    }
+                })
+            }
 
-        }
-        //     } else {
-        //         this.setState({
-        //             message: 'Špatné údaje',
-        //         })
-        //     }
-        //
-        // })
+        }).catch(err => {
+            console.error(err);
+            this.setState({
+                message: {
+                    good: false,
+                    text: 'Něco se nepovedlo'
+                }
+            })
+        })
     }
 
     logout = () => {
@@ -50,19 +55,25 @@ class Account extends Component {
     }
 
     render() {
+        const {message, username, password} = this.state;
+        const messageView = message ? (
+            <Text style={{color: message.bad ? 'red' : 'green'}}>{message.text}</Text>
+        ) : null;
         return this.props.logged ?
             (<View style={styles.container}>
+                {messageView}
                 <Icon name='account-circle' size={75}/>
-                {/*<Text h3>{this.props.username}</Text>*/}
+                <Text h3>{this.props.username}</Text>
                 <Button title='Odhlásit' onPress={this.logout}/>
             </View>) :
             (<View style={styles.container}>
-                {/*<Input value={this.state.username} placeholder='Jméno' autoCorrect={false} onChangeText={(event) => {*/}
-                    {/*this.setState({*/}
-                        {/*username: event,*/}
-                    {/*});*/}
-                {/*}}/>*/}
-                <Input value={this.state.password} placeholder='Heslo' secureTextEntry onChangeText={(event) => {
+                {messageView}
+                <Input value={username} placeholder='Jméno' autoCorrect={false} onChangeText={(event) => {
+                    this.setState({
+                        username: event,
+                    });
+                }}/>
+                <Input value={password} placeholder='Heslo' secureTextEntry onChangeText={(event) => {
                     this.setState({
                         password: event,
                     })

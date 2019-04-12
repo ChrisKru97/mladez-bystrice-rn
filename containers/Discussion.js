@@ -10,6 +10,7 @@ class Discussion extends Component {
         data: null,
         modal: false,
         message: '',
+        resMessage: null,
         author: this.props.username,
     }
 
@@ -28,11 +29,51 @@ class Discussion extends Component {
             }, () => {
                 AsyncStorage.setItem('messages', JSON.stringify(sorted));
             })
+        }).catch(err => {
+            console.error(err);
+            this.setState({
+                message: {
+                    good: false,
+                    text: 'Něco se nepovedlo'
+                }
+            })
         })
     }
 
     addMessage = () => {
-
+        fetch('https://arcane-temple-75559.herokuapp.com/addmessages',
+            {
+                method: 'POST',
+                body: {
+                    sender: this.state.author,
+                    message: this.state.message,
+                }
+            }).then(response => response.json()).then(response => {
+            if (response.ok) {
+                this.setState({
+                    message: {
+                        good: true,
+                        text: 'Změny uloženy',
+                    }
+                })
+            } else {
+                console.error(response);
+                this.setState({
+                    message: {
+                        good: false,
+                        text: 'Něco se nepovedlo'
+                    }
+                })
+            }
+        }).catch(err => {
+            console.error(err);
+            this.setState({
+                message: {
+                    good: false,
+                    text: 'Něco se nepovedlo'
+                }
+            })
+        })
     }
 
     closeModal = () => {
@@ -40,10 +81,15 @@ class Discussion extends Component {
             modal: false,
             message: '',
             author: this.props.username,
+            resMessage: null,
         })
     }
 
     render() {
+        const {modal, resMessage, message} = this.state;
+        const messageView = resMessage ? (
+            <Text style={{color: resMessage.bad ? 'red' : 'green'}}>{resMessage.text}</Text>
+        ) : null;
         return (
             <View style={styles.container}>
                 <Modal isVisible={this.state.modal} swipeDirection='down' awoidKeyboard={true}
@@ -55,6 +101,7 @@ class Discussion extends Component {
                         padding: 20,
                         height: '75%'
                     }}>
+                        {messageView}
                         <Input style={{margin: 5}} multiline placeholder='Zpráva' value={this.state.message}
                                autoCorrect={false}
                                onChangeText={event => {
@@ -79,6 +126,7 @@ class Discussion extends Component {
                         })
                     }}/>}
                 />
+                {messageView}
                 <FlatList data={this.state.data}
                           keyExtractor={item => item.id.toString()}
                           renderItem={({item}) => {
