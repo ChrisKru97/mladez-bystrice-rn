@@ -1,11 +1,11 @@
 import React, {Component} from 'react';
-import {FlatList, View} from 'react-native';
+import {FlatList, View, Switch} from 'react-native';
 import {Card, Text, Input, Header, Button, ButtonGroup} from 'react-native-elements';
 import {AsyncStorage, DatePickerAndroid} from 'react-native';
 import Modal from 'react-native-modal';
 import {connect} from 'react-redux';
 import {styles} from '../config';
-import {login, setToken} from "../actions";
+import {login, setToken, setUsername} from "../actions";
 
 class Events extends Component {
     state = {
@@ -18,6 +18,7 @@ class Events extends Component {
         description: '',
         date: null,
         message: null,
+        anonym: false,
     }
 
     componentDidMount = () => {
@@ -89,6 +90,7 @@ class Events extends Component {
                     topic: this.state.topic,
                     description: this.state.description,
                     date: this.state.date,
+                    show: !this.state.anonym
                 }
             }).then(response => response.json()).then(response => {
             if (response.ok) {
@@ -125,11 +127,44 @@ class Events extends Component {
             description: '',
             date: null,
             message: null,
+            anonym: false,
         })
     }
 
-    deleteEvent = () => {
-        //TODO delete event
+    deleteEvent = (id) => {
+        fetch('https://arcane-temple-75559.herokuapp.com/deletedata',
+            {
+                method: 'POST',
+                headers: new Headers({'Authorization': 'Basic ' + this.props.token}),
+                body: {
+                    id: id
+                }
+            }).then(response => response.json()).then(response => {
+            if (response.ok) {
+                this.setState({
+                    message: {
+                        good: true,
+                        text: 'Změny uloženy',
+                    }
+                })
+            } else {
+                console.error(response);
+                this.setState({
+                    message: {
+                        good: false,
+                        text: 'Něco se nepovedlo'
+                    }
+                })
+            }
+        }).catch(err => {
+            console.error(err);
+            this.setState({
+                message: {
+                    good: false,
+                    text: 'Něco se nepovedlo'
+                }
+            })
+        })
     }
 
 
@@ -177,6 +212,11 @@ class Events extends Component {
                                         console.error('Nelze zvolit', message);
                                     }
                                 }}/>
+                        <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly'}}>
+                            <Text>Anonymně?</Text><Switch value={this.state.anonym} onValueChange={(e) => {
+                            this.setState({anonym: e})
+                        }}/>
+                        </View>
                         <Button title='Přidej' raised onPress={this.addEvent}/>
                     </View>
                 </Modal>
@@ -206,11 +246,22 @@ class Events extends Component {
                     renderItem={({item}) => {
                         const date = new Date(item.date);
                         return (
-                            <Card title={item.title}>
+                            <Card title={
+                                item.author === this.props.username ? (
+                                    <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly'}}>
+                                        <Text h4>{item.title}</Text>
+                                        <Button title='Smazat' onPress={() => {
+                                            this.deleteEvent(item.id)
+                                        }}/>
+                                    </View>
+                                ) : <Text h4>{item.title}</Text>
+                            }>
                                 <Text
-                                    style={{fontWeight: 'bold'}}>{`${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`}</Text>
+                                    style={{fontWeight: 'bold'}}>{date.toLocaleString('cs-CZ', {timeZone: 'UTC'})}</Text>
                                 <Text>{item.description}</Text>
-                                <Text style={{fontWeight: 'bold'}}>{item.author}</Text>
+                                {item.show ? (
+                                    <Text style={{fontWeight: 'bold'}}>{item.author}</Text>
+                                ) : null}
                             </Card>
                         );
                     }}
@@ -224,6 +275,7 @@ export default connect(state => state.login,
     (dispatch) => {
         return {
             setToken: event => dispatch(setToken(event)),
+            setUsername: event => dispatch(setUsername(event)),
             login: event => dispatch(login()),
         }
     })(Events);

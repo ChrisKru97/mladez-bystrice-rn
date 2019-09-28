@@ -134,7 +134,7 @@ class Discussion extends Component {
                               return (
                                   <Card title={item.sender}>
                                       <Text
-                                          style={{fontWeight: 'bold'}}>{`${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`}</Text>
+                                          style={{fontWeight: 'bold'}}>{date.toLocaleString('cs-CZ', { timeZone: 'UTC' })}</Text>
                                       <Text>{item.message}</Text>
                                   </Card>
                               );
